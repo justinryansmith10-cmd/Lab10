@@ -185,11 +185,36 @@ always @(posedge clk or negedge rst)
 begin
 	if (rst == 1'b0)
 	begin
-		
+		i <= 32'd0;
+		sum <= 32'd0;
 	end
 	else
 	begin
 		case (S)
+
+			START: begin 
+				sum <= 32'd0;
+				i <= 32'd0;
+				done <= 0;
+			end
+
+			F_i_0: begin 
+				array_mem_addr <= i; // points to the ith memory location
+			end
+
+			VAL_i: begin
+				array_mem_wren <= 0;
+			end
+
+			ADD: begin
+				sum <= sum + array_mem_out;
+			end
+
+			i_INC: i <= i + 1;
+			DONE: done <= 1'b1;
+
+			default: done <= 0;
+
 		
 		endcase
 	end
