@@ -120,7 +120,7 @@ assign LEDR[9:6] = S;
 wire clk;
 assign clk = CLOCK_50;
 wire rst;
-assign rst = KEY[3];
+assign rst = ~KEY[3];
 wire start;
 assign start = ~KEY[2];
 wire [1:0]display_control; // {0 = sum, 1 = my i variable, }
@@ -136,27 +136,31 @@ reg array_mem_wren;
 reg [7:0]seven_seg_in;
 
 /* FSM signals and parameters */
-reg [
-reg [
-parameter START = ,
-
-			ERROR =  ;
+reg [2:0] S;
+reg [2:0] NS;
+parameter START = 3'd0,
+			F_i_0 = 3'd1,
+			VAL_i = 3'd2,
+			ADD = 3'd3,
+			i_INC = 3'd4,
+			DONE = 3'd5,
+			ERROR =  3'd6;
 
 /* sum and i variables */
-reg [:0] i;
-reg [:0] sum;	
+reg [31:0] i; // All integers subject to change once reviewing lab specifications
+reg [31:0] sum;	// All integers subject to change once reviewing lab specifications
 
 /* instantiate the module to display the 8 bit result */
 three_decimal_vals_w_neg two_d(seven_seg_in, seg7_neg_sign, seg7_dig0, seg7_dig1, seg7_dig2);
 
 /* instantiate IP memory for the array of numbers */
-array_mem numbers(
+array_mem numbers()
 	
 /* S update always block */
 always @(posedge clk or negedge rst)
 begin
 	if (rst == 1'b0)
-		S <= 
+		S <= START;
 	else
 		S <= NS;
 end
@@ -165,11 +169,15 @@ end
 always @(*)
 begin
 	case (S)
-		START: 				
-		
+		START: if (start == 1'b1) NS = F_i_0;
+				else NS = START;
+		F_i_0: if(i < 3'd8) NS = VAL_i;
+				else NS = DONE;
+		VAL_i: NS = ADD;
+		ADD: NS = i_INC;
+		i_INC: NS = F_i_0;
 		default: NS = ERROR;
 	endcase
-		
 end
 
 /* clocked control signals always block */
